@@ -1,10 +1,7 @@
 -- FitCal Community / Social Tables
 
--- Add post_type column if table already exists
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS post_type TEXT DEFAULT 'fitness';
-
 -- Posts
-CREATE TABLE posts (
+CREATE TABLE IF NOT EXISTS posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   content TEXT NOT NULL,
@@ -15,7 +12,7 @@ CREATE TABLE posts (
 );
 
 -- Post likes
-CREATE TABLE post_likes (
+CREATE TABLE IF NOT EXISTS post_likes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -24,7 +21,7 @@ CREATE TABLE post_likes (
 );
 
 -- Post comments
-CREATE TABLE post_comments (
+CREATE TABLE IF NOT EXISTS post_comments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -32,10 +29,13 @@ CREATE TABLE post_comments (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add post_type column if upgrading existing table
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS post_type TEXT DEFAULT 'fitness';
+
 -- Indexes
-CREATE INDEX idx_posts_created ON posts(created_at DESC);
-CREATE INDEX idx_post_likes_post ON post_likes(post_id);
-CREATE INDEX idx_post_comments_post ON post_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_post_likes_post ON post_likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_post ON post_comments(post_id);
 
 -- Row Level Security
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
@@ -43,44 +43,44 @@ ALTER TABLE post_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE post_comments ENABLE ROW LEVEL SECURITY;
 
 -- Posts: anyone can read, only own user can insert/update/delete
-CREATE POLICY "Anyone can read posts"
+CREATE POLICY IF NOT EXISTS "Anyone can read posts"
   ON posts FOR SELECT
   USING (true);
 
-CREATE POLICY "Users can create their own posts"
+CREATE POLICY IF NOT EXISTS "Users can create their own posts"
   ON posts FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own posts"
+CREATE POLICY IF NOT EXISTS "Users can update their own posts"
   ON posts FOR UPDATE
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own posts"
+CREATE POLICY IF NOT EXISTS "Users can delete their own posts"
   ON posts FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Likes: anyone can read, users can like/unlike their own
-CREATE POLICY "Anyone can read likes"
+CREATE POLICY IF NOT EXISTS "Anyone can read likes"
   ON post_likes FOR SELECT
   USING (true);
 
-CREATE POLICY "Users can like"
+CREATE POLICY IF NOT EXISTS "Users can like"
   ON post_likes FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can unlike"
+CREATE POLICY IF NOT EXISTS "Users can unlike"
   ON post_likes FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Comments: anyone can read, only own user can manage
-CREATE POLICY "Anyone can read comments"
+CREATE POLICY IF NOT EXISTS "Anyone can read comments"
   ON post_comments FOR SELECT
   USING (true);
 
-CREATE POLICY "Users can create their own comments"
+CREATE POLICY IF NOT EXISTS "Users can create their own comments"
   ON post_comments FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own comments"
+CREATE POLICY IF NOT EXISTS "Users can delete their own comments"
   ON post_comments FOR DELETE
   USING (auth.uid() = user_id);

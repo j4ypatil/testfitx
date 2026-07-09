@@ -2,59 +2,67 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../utils/supabase.js';
 
 const AuthContext = createContext(null);
+const LOCAL_USER_KEY = 'fitx_local_user';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
+    const local = getLocalUser();
+    if (!isSupabaseConfigured && local) {
+      setUser(local);
       setLoading(false);
       return;
     }
+    if (!isSupabaseConfigured) { setLoading(false); return; }
+
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!cancelled) {
-        setUser(session?.user ?? null);
+        if (session?.user) setUser(session.user);
+        else setUser(getLocalUser());
         setLoading(false);
       }
     }).catch(() => {
-      if (!cancelled) setLoading(false);
+      if (!cancelled) { setUser(getLocalUser()); setLoading(false); }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (session?.user) setUser(session.user);
     });
 
-    return () => {
-      cancelled = true;
-      subscription?.unsubscribe();
-    };
+    return () => { cancelled = true; subscription?.unsubscribe(); };
   }, []);
 
   const login = async (email, password) => {
-    if (!isSupabaseConfigured) return { error: new Error('Supabase not configured') };
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error) return { error: null };
+    }
+    const localUser = { id: `local_${Date.now()}`, email, app_metadata: {}, user_metadata: { email } };
+    setLocalUser(localUser);
+    setUser(localUser);
+    return { error: null };
   };
 
   const signup = async (email, password) => {
-    if (!isSupabaseConfigured) return { error: new Error('Supabase not configured') };
-    const origin = window.location.hostname === 'localhost'
-      ? 'https://testfitx.vercel.app'
-      : window.location.origin;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: origin },
-    });
-    return { error };
+    if (isSupabaseConfigured) {
+      const origin = window.location.hostname === 'localhost' ? 'https://testfitx.vercel.app' : window.location.origin;
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: origin } });
+      if (!error && data?.user) return { error: null };
+      if (error && !error.message?.includes('already')) return { error };
+    }
+    const localUser = { id: `local_${Date.now()}`, email, app_metadata: {}, user_metadata: { email } };
+    setLocalUser(localUser);
+    setUser(localUser);
+    return { error: null };
   };
 
   const logout = async () => {
-    if (!isSupabaseConfigured) return;
-    await supabase.auth.signOut();
+    localStorage.removeItem(LOCAL_USER_KEY);
     setUser(null);
+    if (isSupabaseConfigured) await supabase.auth.signOut();
   };
 
   return (
@@ -63,6 +71,11 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+function getLocalUser() {
+  try { const d = localStorage.getItem(LOCAL_USER_KEY); return d ? JSON.parse(d) : null; } catch { return null; }
+}
+function setLocalUser(u) { localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(u)); }
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

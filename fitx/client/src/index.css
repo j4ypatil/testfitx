@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .card-light {
+    @apply bg-light-card border border-light-border rounded-2xl p-4;
+  }
+  .card-dark {
+    @apply bg-dark-card border border-dark-border rounded-2xl p-4;
+  }
+  .btn-primary {
+    @apply w-full py-4 rounded-2xl text-center font-semibold text-base transition-all duration-200;
+  }
+  .btn-primary-active {
+    @apply bg-accent text-white cursor-pointer;
+  }
+  .btn-primary-disabled {
+    @apply bg-[#38383a] text-[#636366] cursor-not-allowed;
+  }
+  .slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+  .slide-out {
+    animation: slideOut 0.3s ease-in;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Flame animation */
+@keyframes flame-flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  25% { transform: scaleY(1.08) scaleX(0.95); opacity: 0.9; }
+  50% { transform: scaleY(0.92) scaleX(1.05); opacity: 1; }
+  75% { transform: scaleY(1.04) scaleX(0.97); opacity: 0.92; }
+}
+
+@keyframes flame-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,159,10,0.3); }
+  50% { box-shadow: 0 0 24px rgba(255,69,58,0.4), 0 0 40px rgba(255,159,10,0.15); }
+}
+
+@keyframes streak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes streak-popup {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-flame {
+  animation: flame-flicker 1.2s ease-in-out infinite;
+}
+
+.animate-flame-glow {
+  animation: flame-glow 2s ease-in-out infinite;
+}
+
+.animate-streak-pulse {
+  animation: streak-pulse 2s ease-in-out infinite;
+}
+
+.animate-streak-popup {
+  animation: streak-popup 0.25s ease-out;
+}

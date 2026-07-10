@@ -221,9 +221,18 @@ export default function WorkoutPlanner() {
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {plan.map((day, idx) => {
           const dayTotal = (day.exercises || []).length;
+          const doneCount = (day.exercises || []).filter(e => e.done).length;
+          const allDone = dayTotal > 0 && doneCount === dayTotal;
+          const dayDate = new Date();
+          const todayIdx = dayDate.getDay();
+          const targetIdx = dayLabels.indexOf(day.dayName);
+          const diff = ((targetIdx - todayIdx) % 7 + 7) % 7;
+          dayDate.setDate(dayDate.getDate() + diff);
+          const dateStr = dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const shortDay = day.dayName?.slice(0, 3) || dayLabels[idx]?.slice(0, 3);
           return (
             <button
               key={idx}
@@ -234,9 +243,20 @@ export default function WorkoutPlanner() {
                   : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06]'
               }`}
             >
-              <div className="text-[10px] font-semibold text-center text-white/30">D{day.day}</div>
-              <div className={`text-[9px] text-center mt-0.5 font-medium ${activeDay === idx ? 'text-white/50' : 'text-white/20'}`}>
-                {day.isRestDay ? '—' : dayTotal > 0 ? `${dayTotal}` : '0'}
+              <div className="text-[9px] font-semibold text-center text-white/30">{shortDay}<br/>{dateStr}</div>
+              <div className={`flex items-center justify-center gap-0.5 mt-1 text-[9px] font-medium ${activeDay === idx ? 'text-white/50' : 'text-white/20'}`}>
+                {day.isRestDay ? (
+                  <span>—</span>
+                ) : allDone ? (
+                  <span className="text-green-400 flex items-center gap-0.5">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {doneCount}
+                  </span>
+                ) : (
+                  <span>{doneCount}/{dayTotal}</span>
+                )}
               </div>
             </button>
           );

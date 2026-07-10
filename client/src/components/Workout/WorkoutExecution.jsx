@@ -54,13 +54,8 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
   const exercise = exercises[currentIdx];
   const total = exercises.length;
   const progress = ((currentIdx + 1) / total) * 100;
-  const defaultSets = exercise?.sets || 3;
   const exKey = `ex_${currentIdx}`;
-  const log = (() => {
-    const saved = setLogs[exKey];
-    if (saved && saved.length > 0) return saved;
-    return Array.from({ length: defaultSets }, (_, i) => ({ set: i + 1, weight: 0, unit: 'kg', reps: 0, done: false }));
-  })();
+  const log = setLogs[exKey] || [];
 
   const lastSession = getLastSession(exercise?.name);
   const bests = getExerciseBests(exercise?.name);
@@ -84,7 +79,7 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
 
   useEffect(() => {
     localStorage.setItem('fitx_workout_exec_logs', JSON.stringify(setLogs));
-    const allDone = log.every(s => s.done);
+    const allDone = log.length > 0 && log.every(s => s.done);
     setCompleted(allDone);
     if (allDone) {
       setSessionVolume(log.reduce((sum, s) => sum + s.weight * s.reps, 0));
@@ -168,7 +163,7 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
             {detail?.ok && detail.equipment && <span className="text-xs text-dark-muted">· {detail.equipment}</span>}
           </div>
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-sm font-semibold text-accent">{defaultSets} Sets × {repDisplay} Reps</span>
+            <span className="text-sm font-semibold text-accent">{repDisplay} Reps</span>
           </div>
         </div>
 

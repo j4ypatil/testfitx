@@ -167,7 +167,17 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
           </div>
         </div>
 
-        {completed && (
+        {log.length === 0 ? (
+          <div className="flex flex-col items-center py-8">
+            <p className="text-dark-muted text-sm mb-4">No sets logged yet</p>
+            <button
+              onClick={handleNextExercise}
+              className="w-full py-3.5 rounded-xl border border-[#2c2c2e] text-dark-muted font-medium text-sm flex items-center justify-center gap-2 hover:bg-white/[0.02] transition-colors"
+            >
+              Skip Exercise
+            </button>
+          </div>
+        ) : completed ? (
           <div className="bg-dark-card rounded-2xl p-4 shadow-sm mb-3 text-center">
             <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-2">
               <CheckCircle size={22} className="text-green-500" />
@@ -186,28 +196,25 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
               </div>
             </div>
             <button
-              onClick={() => setShowRest(true)}
+              onClick={handleNextExercise}
               className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm flex items-center justify-center gap-2"
             >
-              Rest {currentIdx < total - 1 ? '& Continue' : '& Finish'}
+              Next Exercise
             </button>
           </div>
-        )}
-
-        {lastSession && !completed && (
-          <div className="bg-dark-card rounded-xl p-3 mb-3">
-            <div className="text-[10px] font-semibold text-dark-muted uppercase tracking-wider mb-1.5">Previous Workout</div>
-            {lastSession.sets.filter(s => s.weight > 0).map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-dark-muted py-0.5">
-                <span className="w-8 font-medium text-foreground">Set {s.set}</span>
-                <span>{s.weight}{s.unit} × {s.reps}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!completed && (
+        ) : (
           <div>
+            {lastSession && (
+              <div className="bg-dark-card rounded-xl p-3 mb-3">
+                <div className="text-[10px] font-semibold text-dark-muted uppercase tracking-wider mb-1.5">Previous Workout</div>
+                {lastSession.sets.filter(s => s.weight > 0).map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-dark-muted py-0.5">
+                    <span className="w-8 font-medium text-foreground">Set {s.set}</span>
+                    <span>{s.weight}{s.unit} × {s.reps}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="text-xs font-semibold text-dark-muted uppercase tracking-wider mb-2.5">Sets</div>
             <div className="space-y-2">
               {log.map((s, idx) => (
@@ -236,15 +243,16 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
                 </button>
               ))}
             </div>
-            <button
-              onClick={addSet}
-              className="w-full mt-2 py-3 rounded-xl border border-dashed border-[#2c2c2e] text-dark-muted text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/[0.02] transition-colors"
-            >
-              <Plus size={14} />
-              Add Set
-            </button>
           </div>
         )}
+
+        <button
+          onClick={addSet}
+          className="w-full mt-2 py-3 rounded-xl border border-dashed border-[#2c2c2e] text-dark-muted text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/[0.02] transition-colors"
+        >
+          <Plus size={14} />
+          Add Set
+        </button>
       </div>
 
       {showModal && (

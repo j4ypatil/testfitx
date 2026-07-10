@@ -56,7 +56,11 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
   const progress = ((currentIdx + 1) / total) * 100;
   const defaultSets = exercise?.sets || 3;
   const exKey = `ex_${currentIdx}`;
-  const log = setLogs[exKey] || Array.from({ length: defaultSets }, (_, i) => ({ set: i + 1, weight: 0, unit: 'kg', reps: 0, done: false }));
+  const log = (() => {
+    const saved = setLogs[exKey];
+    if (saved && saved.length > 0) return saved;
+    return Array.from({ length: defaultSets }, (_, i) => ({ set: i + 1, weight: 0, unit: 'kg', reps: 0, done: false }));
+  })();
 
   const lastSession = getLastSession(exercise?.name);
   const bests = getExerciseBests(exercise?.name);
@@ -96,6 +100,16 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
       return { ...prev, [key]: sets };
     });
     setShowModal(null);
+  };
+
+  const addSet = () => {
+    setSetLogs(prev => {
+      const key = exKey;
+      const sets = [...(prev[key] || log)];
+      const nextNum = sets.length + 1;
+      sets.push({ set: nextNum, weight: 0, unit: 'kg', reps: 0, done: false });
+      return { ...prev, [key]: sets };
+    });
   };
 
   const handleNextExercise = () => {
@@ -188,7 +202,7 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
         {lastSession && !completed && (
           <div className="bg-dark-card rounded-xl p-3 mb-3">
             <div className="text-[10px] font-semibold text-dark-muted uppercase tracking-wider mb-1.5">Previous Workout</div>
-            {lastSession.sets.filter(s => s.set <= defaultSets && s.weight > 0).map((s, i) => (
+            {lastSession.sets.filter(s => s.weight > 0).map((s, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-dark-muted py-0.5">
                 <span className="w-8 font-medium text-foreground">Set {s.set}</span>
                 <span>{s.weight}{s.unit} × {s.reps}</span>
@@ -227,6 +241,13 @@ export default function WorkoutExecution({ exercises, onBack, onFinish }) {
                 </button>
               ))}
             </div>
+            <button
+              onClick={addSet}
+              className="w-full mt-2 py-3 rounded-xl border border-dashed border-[#2c2c2e] text-dark-muted text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/[0.02] transition-colors"
+            >
+              <Plus size={14} />
+              Add Set
+            </button>
           </div>
         )}
       </div>

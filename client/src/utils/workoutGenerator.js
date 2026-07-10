@@ -60,19 +60,23 @@ export function generatePlanByBodyType(onboarding, historyData) {
   const injuries = onboarding.injuries || 'none';
 
   const focus = getBodyTypeFocus(gender, bodyType);
-
   const groupWeights = Object.entries(focus.focus).filter(([, v]) => v > 0);
 
-  // Split: 7 days with varied focus
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const restDayNames = ['Tuesday', 'Friday'];
+
+  // Offset so Day 1 = today
+  const todayIdx = new Date().getDay();
+  const offsetDayNames = [...dayNames.slice(todayIdx), ...dayNames.slice(0, todayIdx)];
+
   const split = [];
   const allGroups = [...groupWeights];
   for (let d = 0; d < 7; d++) {
-    const dayIdx = d % 7;
-    if (dayIdx === 1 || dayIdx === 4) {
+    const dayName = offsetDayNames[d];
+    if (restDayNames.includes(dayName)) {
       split.push({ focus: 'Rest & Recovery', isRestDay: true });
       continue;
     }
-    // Pick 3-4 muscle groups weighted by focus
     const dayGroups = [];
     const pool = [...allGroups];
     const count = Math.min(4, Math.max(2, pool.length));
@@ -84,18 +88,22 @@ export function generatePlanByBodyType(onboarding, historyData) {
     split.push({ focus: uniqueGroups.join(' · '), groups: uniqueGroups });
   }
 
-  // Map day names
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-  return split.map((d, idx) => ({
-    day: idx + 1,
-    dayName: dayNames[idx],
-    focus: d.isRestDay ? 'Rest & Recovery' : d.focus,
-    isRestDay: d.isRestDay || false,
-    warmup: d.isRestDay ? [] : ['Arm circles 30s', 'Bodyweight squats 15 reps', 'Torso twists 30s'],
-    exercises: d.isRestDay ? [] : pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType),
-    cooldown: d.isRestDay ? [] : ['Hamstring stretch 30s', 'Shoulder stretch 30s'],
-  }));
+  return split.map((d, idx) => {
+    const dayName = offsetDayNames[idx];
+    const date = new Date();
+    date.setDate(date.getDate() + idx);
+    const dateKey = date.toISOString().split('T')[0];
+    return {
+      day: idx + 1,
+      dayName,
+      dateKey,
+      focus: d.isRestDay ? 'Rest & Recovery' : d.focus,
+      isRestDay: d.isRestDay || false,
+      warmup: d.isRestDay ? [] : ['Arm circles 30s', 'Bodyweight squats 15 reps', 'Torso twists 30s'],
+      exercises: d.isRestDay ? [] : pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType),
+      cooldown: d.isRestDay ? [] : ['Hamstring stretch 30s', 'Shoulder stretch 30s'],
+    };
+  });
 }
 
 function weightedPick(pool) {

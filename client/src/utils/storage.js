@@ -148,6 +148,16 @@ export function markDayComplete(dayIndex) {
   return plan;
 }
 
+export function markDateComplete(dateKey) {
+  const plan = getWorkoutPlan();
+  if (!plan) return null;
+  const day = plan.find(d => d.dateKey === dateKey);
+  if (!day) return null;
+  (day.exercises || []).forEach(ex => { if (ex) ex.done = true; });
+  setWorkoutPlan(plan);
+  return plan;
+}
+
 export function getCompletedCount(plan) {
   if (!plan) return { days: 0, total: 0 };
   const total = plan.reduce((sum, d) => sum + (d.exercises?.length || 0), 0);

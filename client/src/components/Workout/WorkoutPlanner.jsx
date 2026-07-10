@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dumbbell, Play, ChevronRight, ChevronLeft, BookOpen, Zap, Clock, Flame } from 'lucide-react';
 import WorkoutExecution from './WorkoutExecution.jsx';
 import ExerciseLibrary from './ExerciseLibrary.jsx';
-import { getWorkoutPlan, markDayComplete, getCompletedCount, checkAndUpdateStreak, getDateKey } from '../../utils/storage.js';
+import { getWorkoutPlan, markDateComplete, getCompletedCount, checkAndUpdateStreak, getDateKey } from '../../utils/storage.js';
 
 const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -17,7 +17,13 @@ export default function WorkoutPlanner() {
   const [activeDay, setActiveDay] = useState(0);
 
   useEffect(() => {
-    setPlan(getWorkoutPlan());
+    const p = getWorkoutPlan();
+    setPlan(p);
+    if (p && p.length > 0) {
+      const todayKey = new Date().toISOString().split('T')[0];
+      const todayIdx = p.findIndex(d => d.dateKey === todayKey);
+      if (todayIdx >= 0) setActiveDay(todayIdx);
+    }
   }, []);
 
   const triggerUpdate = () => forceUpdate(n => n + 1);
@@ -48,10 +54,12 @@ export default function WorkoutPlanner() {
   const { days: doneEx, total: totalEx } = getCompletedCount(plan);
 
   const handleFinishWorkout = () => {
-    markDayComplete(activeDay);
-    checkAndUpdateStreak(getDateKey(new Date()));
+    const todayKey = getDateKey(new Date());
+    markDateComplete(todayKey);
+    checkAndUpdateStreak(todayKey);
     setStarted(false);
-    if (activeDay < plan.length - 1) setActiveDay(activeDay + 1);
+    const nextIdx = plan.findIndex(d => d.dateKey === todayKey);
+    if (nextIdx >= 0 && nextIdx < plan.length - 1) setActiveDay(nextIdx + 1);
     triggerUpdate();
   };
 
@@ -226,12 +234,8 @@ export default function WorkoutPlanner() {
           const dayTotal = (day.exercises || []).length;
           const doneCount = (day.exercises || []).filter(e => e.done).length;
           const allDone = dayTotal > 0 && doneCount === dayTotal;
-          const dayDate = new Date();
-          const todayIdx = dayDate.getDay();
-          const targetIdx = dayLabels.indexOf(day.dayName);
-          const diff = ((targetIdx - todayIdx) % 7 + 7) % 7;
-          dayDate.setDate(dayDate.getDate() + diff);
-          const dateStr = dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const d = new Date(day.dateKey + 'T00:00:00');
+          const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const shortDay = day.dayName?.slice(0, 3) || dayLabels[idx]?.slice(0, 3);
           return (
             <button

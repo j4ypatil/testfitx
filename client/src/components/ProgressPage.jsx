@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { TrendingUp, TrendingDown, Minus, Dumbbell, Calendar, Zap } from 'lucide-react';
 import { getOnboarding, getAllWeights, getWorkoutAdherence, getWorkoutPlan, getCompletedCount } from '../utils/storage.js';
-import WeightChart from './Profile/WeightChart.jsx';
+
+const WeightChart = lazy(() => import('./Profile/WeightChart.jsx'));
 
 export default function ProgressPage({ onboarding }) {
   const [weights, setWeights] = useState([]);
@@ -118,7 +119,9 @@ export default function ProgressPage({ onboarding }) {
         </div>
       </div>
 
-      <WeightChart data={weights} />
+      <Suspense fallback={<div className="h-[200px] bg-white/[0.02] rounded-2xl" />}>
+        <WeightChart data={weights} />
+      </Suspense>
     </div>
   );
 }

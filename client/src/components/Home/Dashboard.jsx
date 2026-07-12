@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Header from './Header.jsx';
 import DateSelector from './DateSelector.jsx';
 import CaloriesCard from './CaloriesCard.jsx';
 import MacroCards from './MacroCards.jsx';
 import MealList from './MealList.jsx';
-import WeeklyChart from './WeeklyChart.jsx';
 import AddFoodModal from './AddFoodModal.jsx';
+
+const WeeklyChart = lazy(() => import('./WeeklyChart.jsx'));
 import { getFoods, addFood, deleteFood, getDateKey, getStreak, checkAndUpdateStreak } from '../../utils/storage.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { syncFoodData, cleanupOldFoodData, loadUserData } from '../../utils/sync.js';
@@ -102,7 +103,9 @@ export default function Dashboard({ onboarding }) {
         <span className="text-[11px] font-semibold text-white/30 tracking-widest uppercase">{foods.length > 0 ? "Today's Meals" : 'Nutrition Log'}</span>
       </div>
       <MealList foods={foods} onDelete={handleDeleteFood} />
-      <WeeklyChart data={weekData} />
+      <Suspense fallback={<div className="h-[200px] bg-white/[0.02] rounded-[20px]" />}>
+        <WeeklyChart data={weekData} />
+      </Suspense>
 
       {showModal && (
         <AddFoodModal dateKey={dateKey} onClose={() => { loadFoods(); setShowModal(false); }} onAdd={handleAddFood} />

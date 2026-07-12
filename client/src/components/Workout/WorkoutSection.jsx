@@ -23,12 +23,13 @@ export default function WorkoutSection() {
     }
 
     const existing = getWorkoutPlan();
-    if (existing && Array.isArray(existing) && existing.length > 0) {
+    const todayKey = new Date().toISOString().split('T')[0];
+    const coversToday = existing && Array.isArray(existing) && existing.some(d => d.dateKey === todayKey);
+    if (coversToday) {
       setReady(true);
       return;
     }
 
-    // No existing plan — show photo option first
     setShowPhotoOpt(true);
     setReady(true);
   }, []);

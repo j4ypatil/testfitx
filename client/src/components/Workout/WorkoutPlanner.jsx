@@ -15,14 +15,16 @@ export default function WorkoutPlanner() {
   const [, forceUpdate] = useState(0);
 
   const [activeDay, setActiveDay] = useState(0);
+  const [todayKey, setTodayKey] = useState('');
 
   useEffect(() => {
     const p = getWorkoutPlan();
     setPlan(p);
     if (p && p.length > 0) {
-      const todayKey = new Date().toISOString().split('T')[0];
-      const todayIdx = p.findIndex(d => d.dateKey === todayKey);
-      if (todayIdx >= 0) setActiveDay(todayIdx);
+      const key = new Date().toISOString().split('T')[0];
+      setTodayKey(key);
+      const idx = p.findIndex(d => d.dateKey === key);
+      if (idx >= 0) setActiveDay(idx);
     }
   }, []);
 
@@ -235,7 +237,9 @@ export default function WorkoutPlanner() {
           const doneCount = (day.exercises || []).filter(e => e.done).length;
           const allDone = dayTotal > 0 && doneCount === dayTotal;
           const d = new Date(day.dateKey + 'T00:00:00');
-          const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const dateStr = day.dateKey === todayKey
+            ? 'Today'
+            : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const shortDay = day.dayName?.slice(0, 3) || dayLabels[idx]?.slice(0, 3);
           return (
             <button

@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { User, Save } from 'lucide-react';
 import { setOnboarding, getWeight, setWeight, getDateKey, getAllWeights } from '../../utils/storage.js';
 import { calculateBMR, calculateTDEE, adjustCalories } from '../../utils/tdee.js';
 import { calculateMacros } from '../../utils/macros.js';
-import WeightChart from './WeightChart.jsx';
 import BMICalculator from './BMICalculator.jsx';
 import MacroCards from '../Home/MacroCards.jsx';
 import CaloriesCard from '../Home/CaloriesCard.jsx';
+
+const WeightChart = lazy(() => import('./WeightChart.jsx'));
 
 const labels = {
   lose_fat: 'Lose Fat',

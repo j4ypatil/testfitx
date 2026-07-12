@@ -129,7 +129,7 @@ function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goa
     exByGroup[ex.muscleGroup].push(ex);
   }
 
-  const exercises = [];
+  const dayExercises = [];
   const usedNames = new Set();
 
   for (const group of groups) {
@@ -144,7 +144,6 @@ function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goa
       if (picked >= count) break;
       if (usedNames.has(ex.name)) continue;
 
-      // Use historic weight if available
       let weightSuggestion = null;
       if (historyData?.weights?.[ex.name]) {
         weightSuggestion = historyData.weights[ex.name];
@@ -153,7 +152,7 @@ function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goa
       const diff = gymExp === 'beginner' ? clampDifficulty(ex.difficulty, 'beginner') : ex.difficulty;
 
       usedNames.add(ex.name);
-      exercises.push({
+      dayExercises.push({
         name: ex.name,
         sets: ex.sets,
         reps: ex.reps,
@@ -168,7 +167,7 @@ function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goa
     }
   }
 
-  return shuffle(exercises).slice(0, 6);
+  return shuffle(dayExercises).slice(0, 6);
 }
 
 function isBodyweightOrMinimal(ex) {

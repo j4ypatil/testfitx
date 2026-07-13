@@ -55,7 +55,8 @@ export default function WorkoutSection() {
 
   const createPlan = (withPhoto = false) => {
     setGenerating(true);
-    const plan = generatePlanByBodyType(onboarding, gatherHistory());
+    const oldPlan = getWorkoutPlan();
+    const plan = generatePlanByBodyType(onboarding, gatherHistory(), oldPlan);
     setWorkoutPlan(plan);
     if (withPhoto && photoFile && onboarding) {
       const reader = new FileReader();

@@ -51,7 +51,7 @@ export function getFocusGenders() {
   return bodyTypeFocus;
 }
 
-export function generatePlanByBodyType(onboarding, historyData) {
+export function generatePlanByBodyType(onboarding, historyData, oldPlan) {
   const gender = onboarding.gender || 'male';
   const bodyType = onboarding.bodyType || 'athlete';
   const gymType = onboarding.gymType || 'moderate';
@@ -65,9 +65,21 @@ export function generatePlanByBodyType(onboarding, historyData) {
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const restDayNames = ['Tuesday', 'Friday'];
 
-  // Offset so Day 1 = today
   const todayIdx = new Date().getDay();
   const offsetDayNames = [...dayNames.slice(todayIdx), ...dayNames.slice(0, todayIdx)];
+
+  // Build a map of completed exercises from old plan for carry-over
+  const prevCompleted = {};
+  if (oldPlan && Array.isArray(oldPlan)) {
+    for (const day of oldPlan) {
+      if (day.isRestDay) continue;
+      for (const ex of (day.exercises || [])) {
+        if (ex.done) {
+          prevCompleted[ex.name] = true;
+        }
+      }
+    }
+  }
 
   const split = [];
   const allGroups = [...groupWeights];
@@ -100,7 +112,7 @@ export function generatePlanByBodyType(onboarding, historyData) {
       focus: d.isRestDay ? 'Rest & Recovery' : d.focus,
       isRestDay: d.isRestDay || false,
       warmup: d.isRestDay ? [] : ['Arm circles 30s', 'Bodyweight squats 15 reps', 'Torso twists 30s'],
-      exercises: d.isRestDay ? [] : pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType),
+      exercises: d.isRestDay ? [] : pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType, prevCompleted),
       cooldown: d.isRestDay ? [] : ['Hamstring stretch 30s', 'Shoulder stretch 30s'],
     };
   });
@@ -116,7 +128,7 @@ function weightedPick(pool) {
   return pool[pool.length - 1];
 }
 
-function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goalType) {
+function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goalType, prevCompleted) {
   const exByGroup = {};
   const difficultyLevels = ['beginner', 'intermediate', 'advanced'];
   const maxDiff = difficultyLevels.indexOf(gymExp || 'beginner');
@@ -137,19 +149,30 @@ function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goa
 
   for (const group of groups) {
     const pool = exByGroup[group] || [];
-    const shuffled = shuffle(pool);
+    // Prioritize exercises completed in previous plan
+    const prev = pool.filter(e => prevCompleted?.[e.name]);
+    const rest = pool.filter(e => !prevCompleted?.[e.name]);
+    const ordered = [...shuffle(prev), ...shuffle(rest)];
 
     let count = group === 'Legs' ? 2 : 1;
     if (goalType === 'build_muscle' && (group === 'Chest' || group === 'Back')) count = 2;
 
     let picked = 0;
-    for (const ex of shuffled) {
+    for (const ex of ordered) {
       if (picked >= count) break;
       if (usedNames.has(ex.name)) continue;
 
       let weightSuggestion = null;
       if (historyData?.weights?.[ex.name]) {
         weightSuggestion = historyData.weights[ex.name];
+        // Progressive overload: add 2.5kg if previously completed
+        if (prevCompleted?.[ex.name]) {
+          weightSuggestion = {
+            weight: weightSuggestion.weight + 2.5,
+            unit: weightSuggestion.unit || 'kg',
+            reps: weightSuggestion.reps,
+          };
+        }
       }
 
       const diff = gymExp === 'beginner' ? clampDifficulty(ex.difficulty, 'beginner') : ex.difficulty;

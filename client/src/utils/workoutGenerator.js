@@ -118,9 +118,12 @@ function weightedPick(pool) {
 
 function pickExercisesForDay(groups, gymType, gymExp, injuries, historyData, goalType) {
   const exByGroup = {};
+  const difficultyLevels = ['beginner', 'intermediate', 'advanced'];
+  const maxDiff = difficultyLevels.indexOf(gymExp || 'beginner');
   const validExercises = exercises.filter(e =>
     exerciseDBids[e.name] !== undefined &&
     (gymType !== 'home' || isBodyweightOrMinimal(e)) &&
+    difficultyLevels.indexOf(e.difficulty) <= maxDiff &&
     !isInjurious(e, injuries)
   );
 

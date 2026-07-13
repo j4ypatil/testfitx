@@ -7,7 +7,7 @@ import MealList from './MealList.jsx';
 import AddFoodModal from './AddFoodModal.jsx';
 
 const WeeklyChart = lazy(() => import('./WeeklyChart.jsx'));
-import { getFoods, addFood, deleteFood, getDateKey, getStreak, checkAndUpdateStreak } from '../../utils/storage.js';
+import { getFoods, addFood, deleteFood, getDateKey, getStreak, checkAndUpdateStreak, isDayComplete } from '../../utils/storage.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { syncFoodData, cleanupOldFoodData, loadUserData } from '../../utils/sync.js';
 
@@ -67,13 +67,12 @@ export default function Dashboard({ onboarding }) {
   const handleAddFood = (food) => {
     const updated = addFood(dateKey, food);
     syncFoodData(dateKey, updated);
-    const newConsumed = updated.reduce((s, f) => s + (f.calories || 0), 0);
-    if (newConsumed >= dailyCalories) {
+    setFoods(updated);
+    setShowModal(false);
+    if (isDayComplete(dateKey, dailyCalories)) {
       const newStreak = checkAndUpdateStreak(dateKey);
       setStreak(newStreak);
     }
-    setFoods(updated);
-    setShowModal(false);
   };
 
   const handleDeleteFood = (id) => {

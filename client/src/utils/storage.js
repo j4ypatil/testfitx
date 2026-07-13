@@ -119,6 +119,19 @@ export function checkAndUpdateStreak(dateKey) {
   return newStreak;
 }
 
+export function isDayComplete(dateKey, dailyCalories) {
+  const foods = getFoods(dateKey) || [];
+  const cals = foods.reduce((s, f) => s + (f.calories || 0), 0);
+  if (cals < (dailyCalories || 2000)) return false;
+  const plan = getWorkoutPlan();
+  if (!plan) return false;
+  const day = plan.find(d => d.dateKey === dateKey);
+  if (!day || day.isRestDay) return false;
+  const total = (day.exercises || []).length;
+  const done = (day.exercises || []).filter(e => e.done).length;
+  return total > 0 && done === total;
+}
+
 export function getWorkoutPlan() {
   try {
     const data = localStorage.getItem(KEYS.WORKOUT_PLAN);

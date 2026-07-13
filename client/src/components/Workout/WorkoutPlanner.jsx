@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dumbbell, Play, ChevronRight, ChevronLeft, BookOpen, Zap, Clock, Flame } from 'lucide-react';
 import WorkoutExecution from './WorkoutExecution.jsx';
 import ExerciseLibrary from './ExerciseLibrary.jsx';
-import { getWorkoutPlan, markDateComplete, getCompletedCount, checkAndUpdateStreak, getDateKey } from '../../utils/storage.js';
+import { getWorkoutPlan, markDateComplete, getCompletedCount, checkAndUpdateStreak, isDayComplete, getDateKey, getOnboarding } from '../../utils/storage.js';
 
 const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -58,7 +58,10 @@ export default function WorkoutPlanner() {
   const handleFinishWorkout = () => {
     const todayKey = getDateKey(new Date());
     markDateComplete(todayKey);
-    checkAndUpdateStreak(todayKey);
+    const ob = getOnboarding();
+    if (isDayComplete(todayKey, ob?.dailyCalories)) {
+      checkAndUpdateStreak(todayKey);
+    }
     setStarted(false);
     const nextIdx = plan.findIndex(d => d.dateKey === todayKey);
     if (nextIdx >= 0 && nextIdx < plan.length - 1) setActiveDay(nextIdx + 1);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Camera, Upload, Dumbbell } from 'lucide-react';
-import { getOnboarding, getWorkoutPlan, setWorkoutPlan, getExerciseHistory } from '../../utils/storage';
+import { Camera, Upload, Dumbbell, Scale } from 'lucide-react';
+import { getOnboarding, getWorkoutPlan, setWorkoutPlan, setWeight, getExerciseHistory, getDateKey } from '../../utils/storage';
 import { generatePlanByBodyType, getBodyTypeFocus } from '../../utils/workoutGenerator';
 import WorkoutPlanner from './WorkoutPlanner.jsx';
 
@@ -27,6 +27,41 @@ function adjustByFocus(plan, areas) {
   });
 }
 
+function WeightLogModal({ onLog, onSkip }) {
+  const [val, setVal] = useState('');
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-6">
+      <div className="relative group w-full max-w-sm">
+        <div className="absolute -inset-[1px] bg-gradient-to-b from-white/[0.06] to-transparent rounded-[28px] pointer-events-none" />
+        <div className="relative bg-[rgba(28,28,30,0.95)] backdrop-blur-xl rounded-[28px] border border-white/[0.06] p-6 text-center">
+          <div className="w-14 h-14 rounded-full bg-white/[0.06] flex items-center justify-center mx-auto mb-4 border border-white/[0.06]">
+            <Scale size={24} className="text-white/60" />
+          </div>
+          <h2 className="text-white/90 font-bold text-lg mb-1">Week Complete!</h2>
+          <p className="text-white/40 text-sm mb-5">Log your weight to track progress before the next plan</p>
+          <input
+            type="number"
+            step="0.1"
+            placeholder="Weight (kg)"
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3 text-white/90 text-lg font-semibold text-center mb-4 focus:outline-none focus:border-white/20"
+          />
+          <button
+            onClick={() => onLog(val)}
+            disabled={!val}
+            className="w-full py-3 rounded-2xl bg-white text-black font-semibold text-sm mb-2 disabled:opacity-30"
+          >
+            Log Weight
+          </button>
+          <button onClick={onSkip} className="text-sm text-white/40 font-medium">Skip</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function WorkoutSection() {
   const [ready, setReady] = useState(false);
   const [onboarding, setOnboarding] = useState(null);
@@ -35,6 +70,7 @@ export default function WorkoutSection() {
   const [generating, setGenerating] = useState(false);
   const [focusDesc, setFocusDesc] = useState('');
   const [needsPlan, setNeedsPlan] = useState(false);
+  const [showWeightPrompt, setShowWeightPrompt] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -48,10 +84,18 @@ export default function WorkoutSection() {
     if (existing && Array.isArray(existing) && existing.some(d => d.dateKey === today)) {
       setReady(true);
     } else {
+      if (existing && Array.isArray(existing) && existing.length > 0) {
+        setShowWeightPrompt(true);
+      }
       setNeedsPlan(true);
       setReady(true);
     }
   }, []);
+
+  const handleLogWeight = (val) => {
+    if (val) setWeight(getDateKey(new Date()), parseFloat(val));
+    setShowWeightPrompt(false);
+  };
 
   const createPlan = (withPhoto = false) => {
     setGenerating(true);
@@ -80,9 +124,13 @@ export default function WorkoutSection() {
     return (
       <div className="flex flex-col items-center justify-center pt-20 px-6">
         <div className="w-16 h-16 mb-6 rounded-full border-2 border-white/10 border-t-white/30 animate-spin" />
-        <p className="text-white/80 font-semibold text-lg">Creating your plan...</p>
+        <p className="text-white/80 font-semibold text-lg">Loading...</p>
       </div>
     );
+  }
+
+  if (showWeightPrompt) {
+    return <WeightLogModal onLog={handleLogWeight} onSkip={() => setShowWeightPrompt(false)} />;
   }
 
   if (needsPlan) {

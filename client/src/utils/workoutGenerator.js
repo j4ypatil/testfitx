@@ -63,7 +63,6 @@ export function generatePlanByBodyType(onboarding, historyData, oldPlan) {
   const groupWeights = Object.entries(focus.focus).filter(([, v]) => v > 0);
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const restDayNames = ['Tuesday', 'Friday'];
 
   const todayIdx = new Date().getDay();
   const offsetDayNames = [...dayNames.slice(todayIdx), ...dayNames.slice(0, todayIdx)];
@@ -85,10 +84,7 @@ export function generatePlanByBodyType(onboarding, historyData, oldPlan) {
   const allGroups = [...groupWeights];
   for (let d = 0; d < 7; d++) {
     const dayName = offsetDayNames[d];
-    if (restDayNames.includes(dayName)) {
-      split.push({ focus: 'Rest & Recovery', isRestDay: true });
-      continue;
-    }
+    
     const dayGroups = [];
     const pool = [...allGroups];
     const count = Math.min(4, Math.max(2, pool.length));
@@ -109,11 +105,11 @@ export function generatePlanByBodyType(onboarding, historyData, oldPlan) {
       day: idx + 1,
       dayName,
       dateKey,
-      focus: d.isRestDay ? 'Rest & Recovery' : d.focus,
-      isRestDay: d.isRestDay || false,
-      warmup: d.isRestDay ? [] : ['Arm circles 30s', 'Bodyweight squats 15 reps', 'Torso twists 30s'],
-      exercises: d.isRestDay ? [] : pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType, prevCompleted),
-      cooldown: d.isRestDay ? [] : ['Hamstring stretch 30s', 'Shoulder stretch 30s'],
+      focus: d.focus,
+      isRestDay: false,
+      warmup: ['Arm circles 30s', 'Bodyweight squats 15 reps', 'Torso twists 30s'],
+      exercises: pickExercisesForDay(d.groups, gymType, gymExp, injuries, historyData, goalType, prevCompleted),
+      cooldown: ['Hamstring stretch 30s', 'Shoulder stretch 30s'],
     };
   });
 }

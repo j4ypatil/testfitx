@@ -278,6 +278,12 @@ export default function OnboardingFlow({ onComplete }) {
         macros: data.macros || targets.macros,
       };
       if (photoPreview) finalData.photo = photoPreview;
+      
+      // Log the initial weight
+      import('../../utils/storage.js').then(({ setWeight, getDateKey }) => {
+        setWeight(getDateKey(new Date()), finalData.currentWeight);
+      });
+      
       setOnboarding(finalData);
       onComplete(finalData);
     }

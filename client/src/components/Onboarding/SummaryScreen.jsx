@@ -26,11 +26,19 @@ const goalIcons = {
 };
 
 export default function SummaryScreen({ data, onBack, onSubmit }) {
-  const bmr = calculateBMR(data.currentWeight, data.height, data.age, data.gender);
+  const bmr = calculateBMR(Number(data.currentWeight), Number(data.height), Number(data.age), data.gender);
   const tdee = calculateTDEE(bmr, data.activityLevel);
   const timelineLabels = { '1month': '1 Month (Aggressive)', '3months': '3 Months (Balanced)', '6months': '6 Months (Gentle)' };
   const dailyCalories = adjustCalories(tdee, data.goalType, data.timeline || '3months');
   const macros = calculateMacros(dailyCalories, data.goalType);
+
+  const onSubmitWithWeight = () => {
+    // Log the initial weight
+    import('../../utils/storage.js').then(({ setWeight, getDateKey }) => {
+      setWeight(getDateKey(new Date()), Number(data.currentWeight));
+    });
+    onSubmit();
+  };
 
   return (
     <div className="min-h-screen bg-light-bg flex flex-col">
@@ -105,7 +113,7 @@ export default function SummaryScreen({ data, onBack, onSubmit }) {
       </div>
 
       <div className="px-6 pb-10 pt-4">
-        <button onClick={onSubmit} className="btn-primary btn-primary-active">
+        <button onClick={onSubmitWithWeight} className="btn-primary btn-primary-active">
           Start My Journey
         </button>
       </div>

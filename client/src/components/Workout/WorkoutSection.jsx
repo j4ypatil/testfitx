@@ -93,7 +93,9 @@ export default function WorkoutSection() {
   }, []);
 
   const handleLogWeight = (val) => {
-    if (val) setWeight(getDateKey(new Date()), parseFloat(val));
+    if (val) {
+      setWeight(getDateKey(new Date()), parseFloat(val));
+    }
     setShowWeightPrompt(false);
   };
 

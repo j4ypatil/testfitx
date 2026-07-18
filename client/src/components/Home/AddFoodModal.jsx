@@ -268,35 +268,7 @@ export default function AddFoodModal({ onClose, onAdd, dateKey }) {
                 <Zap size={18} /> Type AI
               </button>
             </div>
-            
-            <div className="flex items-center gap-3 px-1 pb-1 pt-2">
-              <div className="flex-1 h-px bg-white/[0.06]" />
-              <span className="text-xs text-white/30 font-medium">or enter manually</span>
-              <div className="flex-1 h-px bg-white/[0.06]" />
-            </div>
           </div>
-        )}
-
-        {!scanItems && (
-          <>
-            <div className="flex items-center gap-3 px-6 pb-1 pt-2">
-              <div className="flex-1 h-px bg-white/[0.06]" />
-              <span className="text-xs text-white/30 font-medium">or enter manually</span>
-              <div className="flex-1 h-px bg-white/[0.06]" />
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); if (!canSubmit) return; onAdd({ name: name.trim(), calories: Number(calories), protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0 }); }} className="px-6 pb-8 pt-2 space-y-3.5">
-              <input className={inputClass} placeholder="Food name" value={name} onChange={(e) => setName(e.target.value)} />
-              <input className={inputClass} type="number" placeholder="Calories" value={calories} onChange={(e) => setCalories(e.target.value)} />
-              <div className="grid grid-cols-3 gap-2.5">
-                <input className={inputClass} type="number" placeholder="Protein" value={protein} onChange={(e) => setProtein(e.target.value)} />
-                <input className={inputClass} type="number" placeholder="Carbs" value={carbs} onChange={(e) => setCarbs(e.target.value)} />
-                <input className={inputClass} type="number" placeholder="Fat" value={fat} onChange={(e) => setFat(e.target.value)} />
-              </div>
-              <button type="submit" disabled={!canSubmit} className={`w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200 ${canSubmit ? 'bg-white text-black' : 'bg-white/5 text-white/30 cursor-not-allowed'}`}>
-                <Plus size={18} /> Add Entry
-              </button>
-            </form>
-          </>
         )}
       </div>
     </>

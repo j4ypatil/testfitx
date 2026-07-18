@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Plus, Image, Loader2, Camera } from 'lucide-react';
+import { X, Plus, Image, Loader2, Camera, Zap } from 'lucide-react';
 import { addFood } from '../../utils/storage.js';
 
 function dataUrlToBlob(dataUrl) {
@@ -248,15 +248,32 @@ export default function AddFoodModal({ onClose, onAdd, dateKey }) {
         )}
 
         {!photo && !scanItems && (
-          <div className="px-6 pb-2 space-y-2">
+          <div className="px-6 pb-8 space-y-6">
+            {/* Center camera button */}
             <input ref={camInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) { setPhoto(URL.createObjectURL(f)); handleScan(f); }}} />
-            <button onClick={startCamera} className="w-full py-3.5 rounded-2xl bg-white text-black font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm hover:bg-white/90">
-              <Camera size={18} /> Take a Photo
-            </button>
-            <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) { setPhoto(URL.createObjectURL(f)); handleScan(f); }}} />
-            <button onClick={handleGalleryPick} className="w-full py-3 rounded-2xl border-2 border-dashed border-white/[0.08] text-white/40 text-sm font-medium flex items-center justify-center gap-2 hover:border-white/20 hover:text-white/60 transition-all">
-              <Image size={16} /> Upload from Gallery
-            </button>
+            <div className="flex justify-center pt-2">
+              <button onClick={startCamera} className="w-20 h-20 rounded-full bg-white text-black flex items-center justify-center hover:bg-white/90 active:scale-95 transition-all shadow-lg shadow-white/10">
+                <Camera size={32} />
+              </button>
+            </div>
+            
+            {/* Bottom bar with Gallery and AI */}
+            <div className="flex items-center gap-3">
+              <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) { setPhoto(URL.createObjectURL(f)); handleScan(f); }}} />
+              <button onClick={handleGalleryPick} className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/[0.06] text-white/60 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+                <Image size={18} /> Gallery
+              </button>
+              
+              <button className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/[0.06] text-white/60 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+                <Zap size={18} /> Type AI
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-3 px-1 pb-1 pt-2">
+              <div className="flex-1 h-px bg-white/[0.06]" />
+              <span className="text-xs text-white/30 font-medium">or enter manually</span>
+              <div className="flex-1 h-px bg-white/[0.06]" />
+            </div>
           </div>
         )}
 

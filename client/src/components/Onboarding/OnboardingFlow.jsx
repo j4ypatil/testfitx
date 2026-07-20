@@ -8,6 +8,7 @@ import CardOptions from './CardOptions.jsx';
 import TextInput from './TextInput.jsx';
 import LongTermResultsScreen from './LongTermResultsScreen.jsx';
 import GoalRealisticScreen from './GoalRealisticScreen.jsx';
+import GoalComparisonScreen from './GoalComparisonScreen.jsx';
 
 const bodyTypes = {
   male: [
@@ -137,6 +138,12 @@ const questions = [
     ],
   },
   {
+    id: 'goalComparison',
+    question: '',
+    subtitle: '',
+    type: 'goal_comparison',
+  },
+  {
     id: 'dietPref',
     question: 'Do you follow a specific diet?',
     type: 'options',
@@ -247,6 +254,7 @@ export default function OnboardingFlow({ onComplete }) {
     if (current.type === 'summary') return true;
     if (current.type === 'long_term_results') return true;
     if (current.type === 'goal_realistic') return true;
+    if (current.type === 'goal_comparison') return true;
     if (current.type === 'photo') return true;
     return false;
   };
@@ -405,6 +413,17 @@ export default function OnboardingFlow({ onComplete }) {
         onContinue={handleNext}
         goalWeightDiff={diff}
         socialProofPercent={90}
+      />
+    );
+  }
+
+  if (current?.type === 'goal_comparison') {
+    const direction = Number(data.currentWeight) > Number(data.goalWeight) ? 'lose' : 'gain';
+    return (
+      <GoalComparisonScreen
+        onBack={handleBack}
+        onContinue={handleNext}
+        goalDirection={direction}
       />
     );
   }

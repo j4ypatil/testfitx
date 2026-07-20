@@ -7,6 +7,7 @@ import QuestionScreen from './QuestionScreen.jsx';
 import CardOptions from './CardOptions.jsx';
 import TextInput from './TextInput.jsx';
 import LongTermResultsScreen from './LongTermResultsScreen.jsx';
+import GoalRealisticScreen from './GoalRealisticScreen.jsx';
 
 const bodyTypes = {
   male: [
@@ -75,6 +76,12 @@ const questions = [
     type: 'number',
     placeholder: 'Enter your goal weight',
     suffix: 'kg',
+  },
+  {
+    id: 'goalRealistic',
+    question: '',
+    subtitle: '',
+    type: 'goal_realistic',
   },
   {
     id: 'height',
@@ -239,6 +246,7 @@ export default function OnboardingFlow({ onComplete }) {
     if (current.type === 'options' || current.type === 'dynamic_options') return value !== undefined;
     if (current.type === 'summary') return true;
     if (current.type === 'long_term_results') return true;
+    if (current.type === 'goal_realistic') return true;
     if (current.type === 'photo') return true;
     return false;
   };
@@ -385,6 +393,18 @@ export default function OnboardingFlow({ onComplete }) {
         onContinue={handleNext}
         stat="80%"
         statText="of fitcal users maintain their weight loss even 6 months later"
+      />
+    );
+  }
+
+  if (current?.type === 'goal_realistic') {
+    const diff = Math.abs(Number(data.currentWeight) - Number(data.goalWeight));
+    return (
+      <GoalRealisticScreen
+        onBack={handleBack}
+        onContinue={handleNext}
+        goalWeightDiff={diff}
+        socialProofPercent={90}
       />
     );
   }

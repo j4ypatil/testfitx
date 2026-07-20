@@ -9,6 +9,7 @@ import TextInput from './TextInput.jsx';
 import LongTermResultsScreen from './LongTermResultsScreen.jsx';
 import GoalRealisticScreen from './GoalRealisticScreen.jsx';
 import GoalComparisonScreen from './GoalComparisonScreen.jsx';
+import WeightTransitionScreen from './WeightTransitionScreen.jsx';
 
 const bodyTypes = {
   male: [
@@ -154,6 +155,12 @@ const questions = [
     ],
   },
   {
+    id: 'weightTransition',
+    question: '',
+    subtitle: '',
+    type: 'weight_transition',
+  },
+  {
     id: 'summary',
     question: 'Your daily targets',
     subtitle: 'Based on your info — tap to adjust',
@@ -255,6 +262,7 @@ export default function OnboardingFlow({ onComplete }) {
     if (current.type === 'long_term_results') return true;
     if (current.type === 'goal_realistic') return true;
     if (current.type === 'goal_comparison') return true;
+    if (current.type === 'weight_transition') return true;
     if (current.type === 'photo') return true;
     return false;
   };
@@ -421,6 +429,17 @@ export default function OnboardingFlow({ onComplete }) {
     const direction = Number(data.currentWeight) > Number(data.goalWeight) ? 'lose' : 'gain';
     return (
       <GoalComparisonScreen
+        onBack={handleBack}
+        onContinue={handleNext}
+        goalDirection={direction}
+      />
+    );
+  }
+
+  if (current?.type === 'weight_transition') {
+    const direction = Number(data.currentWeight) > Number(data.goalWeight) ? 'lose' : 'gain';
+    return (
+      <WeightTransitionScreen
         onBack={handleBack}
         onContinue={handleNext}
         goalDirection={direction}

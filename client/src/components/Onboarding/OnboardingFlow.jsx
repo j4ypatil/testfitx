@@ -6,6 +6,7 @@ import { calculateMacros } from '../../utils/macros.js';
 import QuestionScreen from './QuestionScreen.jsx';
 import CardOptions from './CardOptions.jsx';
 import TextInput from './TextInput.jsx';
+import LongTermResultsScreen from './LongTermResultsScreen.jsx';
 
 const bodyTypes = {
   male: [
@@ -36,6 +37,12 @@ const questions = [
     type: 'number',
     placeholder: 'Enter your age',
     suffix: 'years',
+  },
+  {
+    id: 'longTermResults',
+    question: '',
+    subtitle: '',
+    type: 'long_term_results',
   },
   {
     id: 'gender',
@@ -231,6 +238,7 @@ export default function OnboardingFlow({ onComplete }) {
     if (current.type === 'height_ft_in') return data.heightFeet !== undefined && data.heightFeet !== '' && data.heightInches !== undefined && data.heightInches !== '';
     if (current.type === 'options' || current.type === 'dynamic_options') return value !== undefined;
     if (current.type === 'summary') return true;
+    if (current.type === 'long_term_results') return true;
     if (current.type === 'photo') return true;
     return false;
   };
@@ -367,6 +375,17 @@ export default function OnboardingFlow({ onComplete }) {
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (current?.type === 'long_term_results') {
+    return (
+      <LongTermResultsScreen
+        onBack={handleBack}
+        onContinue={handleNext}
+        stat="80%"
+        statText="of fitcal users maintain their weight loss even 6 months later"
+      />
     );
   }
 

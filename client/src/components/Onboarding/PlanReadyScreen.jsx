@@ -66,7 +66,11 @@ const timelineLabels = {
 
 export default function PlanReadyScreen({ data, onBack, onSubmit }) {
   const [editMode, setEditMode] = useState(false);
-  const bmr = calculateBMR(Number(data.currentWeight), Number(data.height), Number(data.age), data.gender);
+  
+  const totalInches = Number(data.heightFeet || 0) * 12 + Number(data.heightInches || 0);
+  const heightCm = data.height || (totalInches * 2.54);
+
+  const bmr = calculateBMR(Number(data.currentWeight), heightCm, Number(data.age), data.gender);
   const tdee = calculateTDEE(bmr, data.activityLevel);
   const dailyCalories = adjustCalories(tdee, data.goalType, data.timeline || '3months');
   const macros = calculateMacros(dailyCalories, data.goalType);

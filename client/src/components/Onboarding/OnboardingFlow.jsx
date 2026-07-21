@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Camera, X } from 'lucide-react';
+import PlanReadyScreen from './PlanReadyScreen.jsx';
 import { setOnboarding } from '../../utils/storage.js';
 import { calculateBMR, calculateTDEE, adjustCalories } from '../../utils/tdee.js';
 import { calculateMacros } from '../../utils/macros.js';
@@ -340,65 +341,31 @@ export default function OnboardingFlow({ onComplete }) {
   };
 
   if (current?.type === 'summary') {
-    const targets = computeTargets(data);
-    const cals = editCalories || targets.dailyCalories;
-    const p = editProtein || targets.macros.protein;
-    const c = editCarbs || targets.macros.carbs;
-    const f = editFat || targets.macros.fat;
-
     return (
-      <div className="min-h-screen bg-dark-bg flex flex-col">
-        <div className="flex-1 px-6 pt-6 pb-4 flex flex-col">
-          <div className="mb-6">
-            <button onClick={handleBack} className="w-10 h-10 rounded-full bg-dark-card border border-dark-border flex items-center justify-center mb-4">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5f5f7" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-          </div>
-          <div className="flex-1 flex flex-col">
-            <h1 className="text-[40px] leading-[1.1] font-bold text-foreground mb-2">Your daily targets</h1>
-            <p className="text-dark-muted text-base mb-8">Based on your info — tap to adjust</p>
-
-            <div className="bg-dark-card border border-dark-border rounded-3xl p-6 mb-6">
-              <div className="text-center mb-5">
-                <div className="text-xs text-dark-muted uppercase tracking-wider mb-1">Daily Calories</div>
-                <input
-                  type="number"
-                  value={cals}
-                  onChange={(e) => setEditCalories(e.target.value)}
-                  className="bg-transparent text-5xl font-bold text-foreground text-center w-full outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <div className="text-dark-muted text-sm">kcal</div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Protein', value: p, set: setEditProtein, color: 'text-[#ff4d4d]', bg: 'bg-[#ff4d4d]/10' },
-                  { label: 'Carbs', value: c, set: setEditCarbs, color: 'text-[#ff9f0a]', bg: 'bg-[#ff9f0a]/10' },
-                  { label: 'Fat', value: f, set: setEditFat, color: 'text-[#0a84ff]', bg: 'bg-[#0a84ff]/10' },
-                ].map((item) => (
-                  <div key={item.label} className={`${item.bg} rounded-2xl p-3 text-center`}>
-                    <input
-                      type="number"
-                      value={item.value}
-                      onChange={(e) => item.set(e.target.value)}
-                      className={`bg-transparent ${item.color} text-lg font-bold text-center w-full outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                    />
-                    <div className="text-xs text-dark-muted mt-0.5">{item.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="text-xs text-dark-muted text-center">
-              Your BMR is {calculateBMR(Number(data.currentWeight), (Number(data.heightFeet || 0) * 12 + Number(data.heightInches || 0)) * 2.54, Number(data.age), data.gender)} kcal/day
-            </div>
-          </div>
-        </div>
-        <div className="px-6 pb-10 pt-4">
-          <button onClick={handleNext} className="w-full py-4 rounded-2xl bg-accent text-white font-bold text-base">
-            Looks Good, Continue
-          </button>
-        </div>
-      </div>
+      <PlanReadyScreen
+        data={{ ...data, dailyCalories: data.dailyCalories || computeTargets(data).dailyCalories, macros: data.macros || computeTargets(data).macros }}
+        onBack={handleBack}
+        onSubmit={() => {
+          const targets = computeTargets(data);
+          const totalInches = Number(data.heightFeet || 0) * 12 + Number(data.heightInches || 0);
+          const heightCm = Math.round(totalInches * 2.54 * 10) / 10;
+          const finalData = {
+            ...data,
+            currentWeight: Number(data.currentWeight),
+            goalWeight: Number(data.goalWeight),
+            height: heightCm,
+            age: Number(data.age),
+            dailyCalories: data.dailyCalories || targets.dailyCalories,
+            macros: data.macros || targets.macros,
+          };
+          if (photoPreview) finalData.photo = photoPreview;
+          import('../../utils/storage.js').then(({ setWeight, getDateKey }) => {
+            setWeight(getDateKey(new Date()), finalData.currentWeight);
+          });
+          setOnboarding(finalData);
+          onComplete(finalData);
+        }}
+      />
     );
   }
 

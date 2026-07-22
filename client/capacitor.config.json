@@ -1,0 +1,11 @@
+{
+  "appId": "com.fitcal.app",
+  "appName": "fitcal",
+  "webDir": "dist",
+  "server": {
+    "hostname": "fitcal.app"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
